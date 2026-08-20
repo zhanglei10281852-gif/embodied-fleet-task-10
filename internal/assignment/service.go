@@ -216,9 +216,9 @@ func (s *Service) Report(ctx context.Context, req ReportRequest) error {
 		return apperr.New(apperr.CodeForbidden,
 			fmt.Sprintf("task %s has no active executor", req.TaskID))
 	}
-	owner := req.ExecutorID
-	if owner == "" {
-		owner = t.ClaimedBy
+	if req.ExecutorID != t.ClaimedBy {
+		return apperr.New(apperr.CodeForbidden,
+			fmt.Sprintf("executor %s is not the owner of task %s", req.ExecutorID, req.TaskID))
 	}
 	newStatus, err := s.sm.MustTransition(string(t.Status), string(domain.AssignmentStatusCompleted))
 	if err != nil {
